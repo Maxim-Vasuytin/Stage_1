@@ -14,9 +14,8 @@ string ss;
 string intStr;
 mutex mtx;
 
-int foo_str_to_int(string s)
+vector<int> foo_str_to_int(string s)
 {
-	string s = "74 319 432 82 95 0 1";
 	vector<int> v;
 
 	auto ptr = s.c_str();
@@ -32,13 +31,14 @@ int foo_str_to_int(string s)
 		}
 	}
 
+	cout << "\nОбработанный вектор:\n";
 	copy(begin(v), end(v), ostream_iterator<int>(cout, " "));
-
-	for (auto now : v)
-	{
-		return now;
-	}
+	
+	return v;
+	//Возвращаю вектор интов, который готов к отправке на сервер
 }
+
+//Первая программа
 string first()
 {	
 	vector <int> data(n);
@@ -54,7 +54,6 @@ string first()
 			break;
 		}
 	}
-
 	
 	lock_guard<mutex> guard(mtx);
 	//Сортировка по убыванию
@@ -81,8 +80,9 @@ string first()
 int second(string intStr)
 {
 	lock_guard<mutex> guard(mtx);
-	int i = 0;
-	//Придумать, как переводить из строки в массив int
+	int i = 0;	
+
+	//Удаление лишних символов
 	cout << "\nМассив символов:\n" << intStr;
 	for (size_t k = intStr.find('К'); k != intStr.npos; k = intStr.find('К', k))
 	{
@@ -91,11 +91,10 @@ int second(string intStr)
 	}
 	cout << "\nМассив изменённых символов:\n" << intStr << endl << flush;
 
-	//на этом месте будет неоднозначный вызов, потому что нужно из функции как-то вернуть массив
 	foo_str_to_int(intStr);
+	
 	return 0;
 }
-
 
 int main()
 {
@@ -109,7 +108,6 @@ int main()
 	return 0;
 	}
 
-	//Реализовать потоки. Один вечно считывает данные, другой вечно печатает. Синхронизировать
-	//считать интовый массив, потом собрать массив строк и потом в массив
 
-	//копировать инты из стринга в массив интовый и с ним уже работать
+	//Общий буфер сделать
+	//Реализовать клиент-серверное приложение (есть сформированный вектор, который нужно отправить на клиент)
