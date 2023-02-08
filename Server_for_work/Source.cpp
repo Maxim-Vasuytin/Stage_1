@@ -14,7 +14,7 @@ string ss;
 string intStr;
 mutex mtx;
 
-vector<int> foo_str_to_int(string s)
+int foo_str_to_int(string s)
 {
 	vector<int> v;
 
@@ -34,7 +34,12 @@ vector<int> foo_str_to_int(string s)
 	cout << "\nОбработанный вектор:\n";
 	copy(begin(v), end(v), ostream_iterator<int>(cout, " "));
 	
-	return v;
+	for (auto now : v)
+	{
+		sum += now;
+	}
+
+	return sum;
 	//Возвращаю вектор интов, который готов к отправке на сервер
 }
 
@@ -83,31 +88,90 @@ int second(string intStr)
 	int i = 0;	
 
 	//Удаление лишних символов
-	cout << "\nМассив символов:\n" << intStr;
+	cout << "\nМассив символов:\n" << intStr << endl;
 	for (size_t k = intStr.find('К'); k != intStr.npos; k = intStr.find('К', k))
 	{
 		intStr.erase(k, 3);
 		i++;
 	}
-	cout << "\nМассив изменённых символов:\n" << intStr << endl << flush;
+	//cout << "\nМассив изменённых символов:\n" << intStr << endl << flush;
 
-	foo_str_to_int(intStr);
+	sum = foo_str_to_int(intStr);
+	cout << "\n\nСумма массива нечётных чисел = " << sum << endl << endl;
 	
-	return 0;
+	return sum;
 }
 
 int main()
 {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
-
 	thread t1(first);
 	t1.join();
-	thread t2(second, intStr);
+	thread t2(second, intStr);		
 	t2.join();
+
+
+	cout << "\t\t....FILEMAPPING SERVER or PARENT...." << endl;
+	cout << endl;
+
+	
+	HANDLE hFileMap;
+	BOOL bResult;
+	PCHAR lpBuffer = NULL;
+	char Buffer[1024];
+	_itoa_s(sum, Buffer, 10);
+	size_t szBuffer = sizeof(Buffer);
+
+
+	//CreateFileMapping
+	hFileMap = CreateFileMapping(
+		INVALID_HANDLE_VALUE,
+		NULL,
+		PAGE_READWRITE,
+		0,
+		256,
+		L"Local\\MyFileMap");
+	if (hFileMap == FALSE)
+	{
+		cout << "CreateFileMapping Faild & Error № " << GetLastError() << endl;
+	}
+	cout << "CreateFileMapping Success" << endl;
+
+	//step-2 MapViewofffile
+	lpBuffer = (PCHAR)MapViewOfFile(
+		hFileMap,
+		FILE_MAP_ALL_ACCESS,
+		0,
+		0,
+		256
+	);
+	if (lpBuffer == NULL)
+	{
+		cout << "MapViewOffFile Faild & Error № " << GetLastError() << endl;
+	}
+	cout << "MapViewOffFile Success" << endl;
+
+	//step-3 CopyMemory
+	CopyMemory(lpBuffer, Buffer, szBuffer);
+
+
+	//step-4 UnmapViewOffFile
+	bResult = UnmapViewOfFile(lpBuffer);
+	if (bResult == FALSE)
+	{
+		cout << "UnMapViewOffFile Faild & Error № " << GetLastError() << endl;
+	}
+	cout << "UnMapViewOffFile Success" << endl;
+
+	
+	cout << "\n\n\tНажмите любую клавишу, чтобы очистить...";
+	system("pause");
+	system("cls");
+	system("pause");
+	
 	return 0;
 	}
 
 
-	//Общий буфер сделать
-	//Реализовать клиент-серверное приложение (есть сформированный вектор, который нужно отправить на клиент)
+	//Реализовать клиент-серверное приложение 
