@@ -1,0 +1,51 @@
+cout << "Connected\n";
+	cout << "\t\t....FILEMAPPING SERVER or PARENT...." << endl;
+	cout << endl;
+
+	
+	HANDLE hFileMap;
+	BOOL bResult;
+	PCHAR lpBuffer = NULL;
+	char Buffer[1024];
+	_itoa_s(sum, Buffer, 10);
+	size_t szBuffer = sizeof(Buffer);	
+
+	//CreateFileMapping
+	hFileMap = CreateFileMapping(
+		INVALID_HANDLE_VALUE,
+		NULL,
+		PAGE_READWRITE,
+		0,
+		256,
+		L"Local\\MyFileMap");
+	if (hFileMap == FALSE)
+	{
+		cout << "CreateFileMapping Faild & Error № " << GetLastError() << endl;
+	}
+	cout << "CreateFileMapping Success" << endl;
+
+	//step-2 MapViewofffile
+	lpBuffer = (PCHAR)MapViewOfFile(
+		hFileMap,
+		FILE_MAP_ALL_ACCESS,
+		0,
+		0,
+		256
+	);
+	if (lpBuffer == NULL)
+	{
+		cout << "MapViewOffFile Faild & Error № " << GetLastError() << endl;
+	}
+	cout << "MapViewOffFile Success" << endl;
+
+	//step-3 CopyMemory
+	CopyMemory(lpBuffer, Buffer, szBuffer);
+
+
+	//step-4 UnmapViewOffFile
+	bResult = UnmapViewOfFile(lpBuffer);
+	if (bResult == FALSE)
+	{
+		cout << "UnMapViewOffFile Faild & Error № " << GetLastError() << endl;
+	}
+	cout << "UnMapViewOffFile Success" << endl;

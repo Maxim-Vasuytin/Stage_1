@@ -1,71 +1,50 @@
+#pragma comment(lib, "ws2_32.lib")
+#include <winsock2.h>
 #include <Windows.h>
 #include <iostream>
+
+#pragma warning(disable: 4996)
 using namespace std;
 
-int main()
+int main(int argc, char* argv[])
 {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
-	cout << "\t\t....FILEMAPPING CLIENT or CHILD...." << endl;
-	cout << endl;
 
-	//local Varible Deinition
-
-	HANDLE hFileMap;
-	BOOL bResult;
-	PCHAR lpBuffer = NULL;
-
-	//step-1 OpenFileMapping
-	hFileMap = OpenFileMapping(
-		FILE_MAP_ALL_ACCESS,
-		FALSE,
-		L"Local\\MyFileMap");
-	if (hFileMap == FALSE)
+	WSAData wsaData;
+	WORD DLLVersion = MAKEWORD(2, 1); 
+	if (WSAStartup(DLLVersion, &wsaData) != 0)
 	{
-		cout << "OpenFileMapping Faild & Error № " << GetLastError() << endl;
+		cout << "Error" << endl;
+		exit(1);
 	}
-	cout << "OpenFileMapping Success" << endl;
 
-	//step-2 MapViewOffFile
-	lpBuffer = (PCHAR)MapViewOfFile(
-		hFileMap,
-		FILE_MAP_ALL_ACCESS,
-		0,
-		0,
-		256);
-	if (lpBuffer == NULL)
+	SOCKADDR_IN addr;		
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr.sin_port = htons(1111);
+	addr.sin_family = AF_INET;
+	int sizeofaddr = sizeof(addr);
+
+	SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL);
+	bind(sListen, (SOCKADDR*)&addr, sizeof(addr));
+	listen(sListen, SOMAXCONN);
+	SOCKET newConnection;
+	newConnection = accept(sListen, (SOCKADDR*)&addr, &sizeofaddr);
+
+	if (newConnection)
 	{
-		cout << "MapViewOffFile Faild & Error № " << GetLastError() << endl;
+		char result = { '\0' };
+		int size = sizeof(result);
+		recv(newConnection, &result, size, 0);
+		const char recv_buffer = ntohs(result);
+
+		cout << "\tДанные получены!\tРезультат = " << recv_buffer << "\t" << &result << endl;
 	}
-	cout << "MapViewOffFile Success" << endl;
-
-	//step-3 Reading the Data from File-Ma Object
-	cout << "DATA READING FROM SERVER or  PARRENT PROCESS: " << lpBuffer << endl;
-	
-	int local_buff = atoi(lpBuffer);
-
-	//step-4 UnmapViewOfFile
-	bResult = UnmapViewOfFile(lpBuffer);
-	if (lpBuffer == NULL)
+	/*if (((int)recv_buffer % 32 == 0) && (sizeof((int)recv_buffer) > 2))
 	{
-		cout << "Unmapping Error = " << GetLastError() << endl;
+		cout << "\tДанные получены!\tРезультат = " << (int)recv_buffer << endl;
 	}
-	cout << "Unmapping Success" << endl;
-
-	//step-5 Close Handle
-	CloseHandle(hFileMap);
-
-
-	system("pause");
-	cout << "Нажмите любую клавишу, чтобы очистить...";
-	system("cls");
-
-
-	if ((local_buff % 32 == 0) && (sizeof(local_buff) > 2))
-	{
-		cout << "\tДанные получены!\tРезультат = " << local_buff << endl;
-	}
-	else cout << "\tОшибка!\tПерепроверьте введённые данные";
+	else cout << "\tОшибка!\tПерепроверьте введённые данные";*/
 	system("pause");
 
 	return 0;

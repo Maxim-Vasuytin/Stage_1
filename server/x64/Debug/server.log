@@ -1,2 +1,4 @@
 ﻿  server.cpp
+D:\Программинг\Стажировка\server\server.cpp(40,33): warning C4244: инициализация: преобразование "u_short" в "char", возможна потеря данных
+D:\Программинг\Стажировка\server\server.cpp(40,26): warning C4244: инициализация: преобразование "u_short" в "const char", возможна потеря данных
   server.vcxproj -> D:\Программинг\Стажировка\server\x64\Debug\server.exe

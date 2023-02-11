@@ -1,3 +1,4 @@
+#pragma comment(lib, "ws2_32.lib")
 #include <vector>
 #include <iostream>
 #include <WinSock2.h>
@@ -7,6 +8,8 @@
 #include <thread>
 #include <windows.h>
 #include <mutex>
+
+#pragma warning(disable: 4996)
 
 using namespace std;
 int n = 6, i = 0, sum = 0;				//64 символа на ввод
@@ -40,7 +43,6 @@ int foo_str_to_int(string s)
 	}
 
 	return sum;
-	//Возвращаю вектор интов, который готов к отправке на сервер
 }
 
 //Первая программа
@@ -112,66 +114,29 @@ int main()
 	t2.join();
 
 
-	cout << "\t\t....FILEMAPPING SERVER or PARENT...." << endl;
-	cout << endl;
-
-	
-	HANDLE hFileMap;
-	BOOL bResult;
-	PCHAR lpBuffer = NULL;
-	char Buffer[1024];
-	_itoa_s(sum, Buffer, 10);
-	size_t szBuffer = sizeof(Buffer);
-
-
-	//CreateFileMapping
-	hFileMap = CreateFileMapping(
-		INVALID_HANDLE_VALUE,
-		NULL,
-		PAGE_READWRITE,
-		0,
-		256,
-		L"Local\\MyFileMap");
-	if (hFileMap == FALSE)
+	WSAData wsaData;
+	WORD DLLVersion = MAKEWORD(2, 1); 
+	if (WSAStartup(DLLVersion, &wsaData) != 0)
 	{
-		cout << "CreateFileMapping Faild & Error № " << GetLastError() << endl;
+		cout << "Error" << endl;
+		exit(1);
 	}
-	cout << "CreateFileMapping Success" << endl;
 
-	//step-2 MapViewofffile
-	lpBuffer = (PCHAR)MapViewOfFile(
-		hFileMap,
-		FILE_MAP_ALL_ACCESS,
-		0,
-		0,
-		256
-	);
-	if (lpBuffer == NULL)
-	{
-		cout << "MapViewOffFile Faild & Error № " << GetLastError() << endl;
-	}
-	cout << "MapViewOffFile Success" << endl;
+	SOCKADDR_IN addr;		
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr.sin_port = htons(1111);
+	addr.sin_family = AF_INET; 
+	int sizeofaddr = sizeof(addr);
 
-	//step-3 CopyMemory
-	CopyMemory(lpBuffer, Buffer, szBuffer);
+	SOCKET Connection = socket(AF_INET, SOCK_STREAM, NULL);
+	connect(Connection, (SOCKADDR*)&addr, sizeofaddr);
 
+	const char tosend = htons(sum);
+	int size = sizeof(sum);
 
-	//step-4 UnmapViewOffFile
-	bResult = UnmapViewOfFile(lpBuffer);
-	if (bResult == FALSE)
-	{
-		cout << "UnMapViewOffFile Faild & Error № " << GetLastError() << endl;
-	}
-	cout << "UnMapViewOffFile Success" << endl;
+	send(Connection, &tosend, size, 0);
 
-	
-	cout << "\n\n\tНажмите любую клавишу, чтобы очистить...";
-	system("pause");
-	system("cls");
 	system("pause");
 	
 	return 0;
 	}
-
-
-	//Реализовать клиент-серверное приложение 
