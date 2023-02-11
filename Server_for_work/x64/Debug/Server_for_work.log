@@ -1,3 +1,2 @@
 ﻿  Source.cpp
-D:\Программинг\Стажировка\Server_for_work\Source.cpp(11,1): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
   Server_for_work.vcxproj -> D:\Программинг\Стажировка\Server_for_work\x64\Debug\Server_for_work.exe
